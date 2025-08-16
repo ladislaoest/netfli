@@ -12,6 +12,15 @@ const JWT_SECRET = process.env.JWT_SECRET || 'supersecret';
 const MOVIES_DIR = process.env.MOVIES_DIR || path.join(__dirname, 'movies');
 const USERS_FILE = path.join(MOVIES_DIR, 'users.json');
 
+// Configuración de CORS basada en el entorno
+const allowedOrigins = process.env.NODE_ENV === 'production'
+  ? [
+      'https://emladis.netlify.app',
+      'https://legendary-bombolone-be46af.netlify.app',
+      'https://emladis-backend.onrender.com'
+    ]
+  : ['http://localhost:5000', 'http://localhost:3000', 'http://127.0.0.1:5000'];
+
 // Asegurarse de que el directorio de películas existe
 if (!fs.existsSync(MOVIES_DIR)) {
   fs.mkdirSync(MOVIES_DIR, { recursive: true });
@@ -19,7 +28,17 @@ if (!fs.existsSync(MOVIES_DIR)) {
 
 // Configurar CORS para permitir peticiones desde el frontend
 app.use(cors({
-  origin: ['http://localhost:5000', 'https://emladis.netlify.app'],
+  origin: function(origin, callback) {
+    // Permitir solicitudes sin origen (como las herramientas de API)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) === -1) {
+      console.log('Origin rejected:', origin);
+      return callback(new Error('Not allowed by CORS'));
+    }
+    console.log('Origin accepted:', origin);
+    return callback(null, true);
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
