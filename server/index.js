@@ -105,7 +105,7 @@ async function initializeUsers() {
     
     if (!fs.existsSync(USERS_FILE)) {
       // Crear usuario admin por defecto
-      const adminPassword = 'admin123'; // Contraseña por defecto
+      const adminPassword = 'mta25256969'; // Contraseña específica para admin
       const hashedPassword = await bcrypt.hash(adminPassword, 10);
       const defaultUsers = [{
         username: 'admin',
