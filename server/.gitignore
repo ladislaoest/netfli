@@ -1,0 +1,5 @@
+node_modules/
+.env
+movies/*
+!movies/.gitkeep
+users.json

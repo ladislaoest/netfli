@@ -1,0 +1,11 @@
+[build]
+  publish = "web"
+  command = "echo 'No build needed'"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[build.environment]
+  API_URL = "https://tu-servidor-backend.herokuapp.com"

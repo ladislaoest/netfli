@@ -1,0 +1,59 @@
+services:
+  - type: web
+    name: emladis-backend
+    # === ENTORNO DE EJECUCIÓN ===
+    # Opciones disponibles:
+    # - docker: Docker 
+    # - node: Node.js (recomendado)
+    # - python: Python 3
+    # - ruby: Ruby
+    # - elixir: Elixir
+    # - go: Go
+    # - rust: Rust
+    env: node
+    runtime: node
+
+    # === DIRECTORIO RAÍZ ===
+    # Opciones comunes:
+    # - ./ : Directorio actual
+    # - server : Carpeta del servidor (recomendado)
+    # - api : Carpeta api
+    # - backend : Carpeta backend
+    rootDirectory: server
+
+    # === COMANDOS DE CONSTRUCCIÓN ===
+    # Opciones comunes:
+    # - npm install : Instalar dependencias (recomendado)
+    # - npm ci : Instalación limpia
+    # - yarn install : Instalar con yarn
+    # - yarn : Instalar con yarn
+    buildCommand: npm install
+
+    # === COMANDOS DE INICIO ===
+    # Opciones comunes:
+    # - node index.js : Iniciar directamente (recomendado)
+    # - npm start : Iniciar usando script
+    # - node server.js : Si el archivo principal es server.js
+    # - node app.js : Si el archivo principal es app.js
+    startCommand: node index.js
+
+    # === CONFIGURACIÓN ADICIONAL ===
+    region: eu-central
+    branch: main
+    nodeVersion: 18.x
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        sync: false
+    envVars:
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        sync: false
+    disk:
+      name: movies
+      mountPath: /app/movies
+      sizeGB: 10
