@@ -3,19 +3,53 @@ const API_URL = window.location.hostname === 'localhost'
   ? 'http://localhost:3000/api'
   : 'https://emladis-backend.onrender.com/api';
 
+console.log('API URL configurada:', API_URL);
+
 // Inicializar token
 let token = localStorage.getItem('token') || '';
-console.log('Token inicial:', token); // Debug
+console.log('Token inicial:', token ? 'Token presente' : 'No hay token');
+
+// Función para hacer peticiones autenticadas
+async function fetchWithAuth(url, options = {}) {
+  const headers = {
+    'Content-Type': 'application/json',
+    ...options.headers
+  };
+  
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  console.log('Fetching:', url);
+  const response = await fetch(url, {
+    ...options,
+    headers
+  });
+
+  if (response.status === 401) {
+    console.log('Error de autenticación, limpiando token');
+    localStorage.removeItem('token');
+    token = '';
+    location.reload();
+    return null;
+  }
+
+  return response;
+}
 
 // Verificar si hay un token guardado y validarlo
 async function validateToken() {
-  if (!token) return;
+  if (!token) {
+    console.log('No hay token que validar');
+    return;
+  }
+  
   try {
-    const res = await fetch(API_URL + '/health', {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    if (!res.ok) {
-      console.log('Token inválido, cerrando sesión');
+    console.log('Validando token...');
+    const res = await fetchWithAuth(API_URL + '/health');
+    
+    if (!res || !res.ok) {
+      console.log('Token inválido o expirado, cerrando sesión');
       localStorage.removeItem('token');
       token = '';
       location.reload();
@@ -218,18 +252,25 @@ function showLoginModal() {
     const form = e.target;
     const username = form.username.value;
     const password = form.password.value;
+    
+    console.log('Intentando login para usuario:', username);
+    
     try {
       const res = await fetch(API_URL + '/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
       });
+      
+      console.log('Respuesta del servidor:', res.status);
       const data = await res.json();
+      
       if (res.ok && data.token) {
-        console.log('Token recibido:', data.token); // Debug
+        console.log('Login exitoso, token recibido');
         localStorage.setItem('token', data.token);
         token = data.token;
         modal.remove();
+        console.log('Recargando página después del login exitoso...');
         location.reload();
       } else {
         console.error('Error de login:', data.error || 'Error de autenticación');
