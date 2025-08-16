@@ -142,15 +142,37 @@ function saveUsers(users) {
 
 // Login de usuario
 app.post('/api/login', async (req, res) => {
-  const { username, password } = req.body;
-  const users = loadUsers();
-  const user = users.find(u => u.username === username);
-  if (!user) return res.status(401).json({ error: 'Credenciales inválidas' });
-  if (!user.approved) return res.status(403).json({ error: 'Usuario pendiente de aprobación' });
-  const valid = await bcrypt.compare(password, user.password);
-  if (!valid) return res.status(401).json({ error: 'Credenciales inválidas' });
-  const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '7d' });
-  res.json({ token });
+  try {
+    const { username, password } = req.body;
+    console.log('Intento de login para usuario:', username); // Debug log
+    
+    const users = loadUsers();
+    console.log('Usuarios registrados:', users.map(u => ({ username: u.username, approved: u.approved }))); // Debug log
+    
+    const user = users.find(u => u.username === username);
+    if (!user) {
+      console.log('Usuario no encontrado:', username);
+      return res.status(401).json({ error: 'Credenciales inválidas' });
+    }
+    
+    if (!user.approved) {
+      console.log('Usuario no aprobado:', username);
+      return res.status(403).json({ error: 'Usuario pendiente de aprobación' });
+    }
+    
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) {
+      console.log('Contraseña inválida para usuario:', username);
+      return res.status(401).json({ error: 'Credenciales inválidas' });
+    }
+    
+    const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '7d' });
+    console.log('Login exitoso para usuario:', username);
+    res.json({ token });
+  } catch (error) {
+    console.error('Error en login:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
 });
 
 // Registro de usuario
