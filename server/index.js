@@ -43,12 +43,15 @@ if (!fs.existsSync(MOVIES_DIR)) {
 // Configurar CORS para permitir peticiones desde el frontend
 app.use(cors({
   origin: function(origin, callback) {
-    // Permitir solicitudes sin origen (como las herramientas de API)
+    // Permitir solicitudes sin origen (herramientas como curl/postman)
     if (!origin) return callback(null, true);
-    
+
     if (allowedOrigins.indexOf(origin) === -1) {
-      console.log('Origin rejected:', origin);
-      return callback(new Error('Not allowed by CORS'));
+      console.log('Origin rejected (will not set CORS headers):', origin);
+      // Do not throw an error here; return "false" so the CORS middleware
+      // won't set Access-Control-Allow-* headers. The browser will block the
+      // request cleanly instead of receiving an error response without CORS headers.
+      return callback(null, false);
     }
     console.log('Origin accepted:', origin);
     return callback(null, true);
@@ -57,6 +60,19 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   exposedHeaders: ['Content-Disposition', 'Content-Length', 'Content-Range', 'Accept-Ranges']
+}));
+
+// Ensure OPTIONS (preflight) requests are handled and return CORS headers
+// for allowed origins. This uses the cors middleware to reply to preflight
+// requests so the browser receives Access-Control-Allow-* headers.
+app.options('*', cors({
+  origin: function(origin, callback) {
+    if (!origin) return callback(null, true);
+    return callback(null, allowedOrigins.indexOf(origin) !== -1);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json());
