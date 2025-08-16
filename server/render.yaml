@@ -1,23 +1,15 @@
 services:
   - type: web
     name: emladis-backend
-    # === ENTORNO DE EJECUCIÓN ===
-    # Opciones disponibles:
-    # - docker: Docker 
-    # - node: Node.js (recomendado)
-    # - python: Python 3
-    # - ruby: Ruby
-    # - elixir: Elixir
-    # - go: Go
-    # - rust: Rust
     env: node
-    runtime: node
-
-    # === DIRECTORIO RAÍZ ===
-    # Opciones comunes:
-    # - ./ : Directorio actual
-    # - server : Carpeta del servidor (recomendado)
-    # - api : Carpeta api
+    buildCommand: npm install
+    startCommand: node index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+    healthCheckPath: /api/health
     # - backend : Carpeta backend
     rootDirectory: server
 
