@@ -286,7 +286,6 @@ function showVideoModal(movie) {
   };
   
   xhr.send();
-  }
 }
 
 function hideVideoModal() {
