@@ -8,4 +8,9 @@
   status = 200
 
 [build.environment]
-  API_URL = "https://tu-servidor-backend.herokuapp.com"
+  API_URL = "https://emladis-backend.onrender.com/api"
+
+[[headers]]
+  for = "/*"
+    [headers.values]
+    Access-Control-Allow-Origin = "*"
