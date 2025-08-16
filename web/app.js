@@ -2,7 +2,31 @@
 const API_URL = window.location.hostname === 'localhost' 
   ? 'http://localhost:3000/api'
   : 'https://emladis-backend.onrender.com/api';
+
+// Inicializar token
 let token = localStorage.getItem('token') || '';
+console.log('Token inicial:', token); // Debug
+
+// Verificar si hay un token guardado y validarlo
+async function validateToken() {
+  if (!token) return;
+  try {
+    const res = await fetch(API_URL + '/health', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (!res.ok) {
+      console.log('Token inválido, cerrando sesión');
+      localStorage.removeItem('token');
+      token = '';
+      location.reload();
+    }
+  } catch (err) {
+    console.error('Error al validar token:', err);
+  }
+}
+
+// Validar token al cargar la página
+validateToken();
 
 const moviesContainer = document.getElementById('movies-container');
 const videoModal = document.getElementById('video-modal');
@@ -201,12 +225,14 @@ function showLoginModal() {
         body: JSON.stringify({ username, password })
       });
       const data = await res.json();
-      if (res.ok) {
+      if (res.ok && data.token) {
+        console.log('Token recibido:', data.token); // Debug
         localStorage.setItem('token', data.token);
         token = data.token;
         modal.remove();
         location.reload();
       } else {
+        console.error('Error de login:', data.error || 'Error de autenticación');
         alert(data.error || 'Error de autenticación');
       }
     } catch (err) {
@@ -217,9 +243,13 @@ function showLoginModal() {
 
 async function fetchMovies() {
   moviesContainer.innerHTML = '<div class="col-span-full text-center text-gray-400">Cargando...</div>';
+  console.log('Token actual:', token); // Debug
   try {
     const res = await fetch(API_URL + '/movies', {
-      headers: { Authorization: 'Bearer ' + token }
+      headers: { 
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      }
     });
     if (res.status === 401) {
       moviesContainer.innerHTML = '<div class="col-span-full text-center text-red-400">Debes iniciar sesión para ver las películas.</div>';
